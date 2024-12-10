@@ -1,0 +1,15 @@
+{
+  "packageManager": "yarn@4.5.3",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "name": "starbeam",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "yarn workspace bot start"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
