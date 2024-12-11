@@ -36,6 +36,10 @@ This repository uses the following structure:
 - The `packages/contracts/account` contains a Soroban smart contract that manages user accounts tied to Telegram user IDs
 - Contracts should have their own `Cargo.toml` files that rely on the top-level `Cargo.toml` workspace for their dependencies.
 
+## Setting up building environment
+
+See [SETUP](./SETUP.md) for more details
+
 ## Building the contracts
 
 `stellar contract build`
