@@ -13,6 +13,13 @@ yarn-error.log
 # TypeScript
 *.tsbuildinfo
 
+# Rust's output directory
+target
+
+# Local settings
+.soroban
+.stellar
+
 # Environment variables
 .env
 .env.*
