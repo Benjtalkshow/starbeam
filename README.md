@@ -38,4 +38,21 @@ This repository uses the following structure:
 
 ## Building the contracts
 
-```cargo build
+`stellar contract build`
+
+## Testing contracts
+
+`cargo test`
+
+## Optimizing contracts
+
+`stellar contract optimize --wasm target/wasm32-unknown-unknown/release/account.wasm`
+
+## Deploying contracts to testnet
+
+```sh
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/account.wasm \
+  --source alice \
+  --network testnet
+```
