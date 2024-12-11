@@ -22,14 +22,14 @@ bot.command('help', (ctx: any) => {
 });
 
 bot.command('webapp', (ctx: any) => {
-  ctx.reply('Open Web App', {
-    reply_markup: {
-      inline_keyboard: [[
-        { text: "Open App", web_app: { url: config.WEBAPP_URL || '' }}
-      ]]
-    }
+    ctx.reply('Open Web App', {
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "Open App", url: config.WEBAPP_URL || '' }
+        ]]
+      }
+    });
   });
-});
 
 bot.launch()
 console.log('Bot is running...');
