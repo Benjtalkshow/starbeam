@@ -21,8 +21,8 @@ https://www.rust-lang.org/
 If you're on Mac, use `brew install stellar-cli`
 On Linux, you can install with Cargo: `cargo install --locked stellar-cli@22.0.1 --features opt`
 
-3. Generate account on testnet:
-`stellar keys generate --global alice --network testnet --fund`
+3. Initialize the environment
 
-4. Get the address of a new account
-`stellar keys address alice`
+Run the `initialize.sh` script. It will create a deployer identity, build contracts, deploy contracts and generate typescript bindings.
+
+`./initialize.sh`

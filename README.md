@@ -40,6 +40,10 @@ This repository uses the following structure:
 
 See [SETUP](./SETUP.md) for more details
 
+## Initializing the environment (create deployer identity, build contracts, deploy contracts and generate typescript bindings)
+
+`./initialize.sh`
+
 ## Building the contracts
 
 `stellar contract build`
