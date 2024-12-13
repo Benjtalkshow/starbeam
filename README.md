@@ -19,14 +19,14 @@ This repository uses the following structure:
 ├── packages
 │   ├── bot
 │   │   └── // Telegram bot implementation
-│   ├── contracts
-│   │   └── account
-│   │       ├── src
-│   │       │   ├── lib.rs
-│   │       │   └── test.rs
-│   │       └── Cargo.toml
 │   └── webapp
 │       └── // Next.js mini-app frontend
+├── contracts
+│   └── account
+│       ├── src
+│       │   ├── lib.rs
+│       │   └── test.rs
+│       └── Cargo.toml
 ├── Cargo.toml
 └── README.md
 ```
