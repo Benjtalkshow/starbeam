@@ -1,6 +1,6 @@
 "use client"
 
-import { useLaunchParams } from "@telegram-apps/sdk-react";
+import { useLaunchParams, biometry } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -19,6 +19,33 @@ export default function Home() {
           const name = initData.user?.firstName + " " + initData.user?.lastName;
           setUserId(uid ?? null);
           setName(name);
+
+          // Check if biometry is available and mount it
+          if (biometry.mount.isAvailable()) {
+            try {
+              await biometry.mount();
+              if (biometry.isMounted()) {
+                // Attempt to authenticate the user
+                if (biometry.authenticate.isAvailable()) {
+                  const { status, token } = await biometry.authenticate({
+                    reason: 'Please authenticate to continue',
+                  });
+
+                  if (status === 'authorized') {
+                    console.log(`Authorized. Token: ${token}`);
+                  } else {
+                    console.log('Not authorized');
+                    setError("Biometry authentication failed");
+                  }
+                }
+              }
+            } catch (err) {
+              console.error("Error during biometry mounting:", err);
+              setError("Biometry mounting failed");
+            }
+          } else {
+            console.log("Biometry is not available");
+          }
         } else {
           console.log("No initData available");
           setError("No initData provided");
