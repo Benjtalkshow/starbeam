@@ -54,9 +54,20 @@ See [SETUP](./SETUP.md) for more details
 
 ## Deploying contracts to testnet
 
+Note: Use your own account name instead of `alice`
+
 ```sh
 stellar contract deploy \
   --wasm target/wasm32-unknown-unknown/release/account.wasm \
   --source alice \
-  --network testnet
+  --network futurenet \
+  --alias account
+```
+
+## Generating Typescript bindings
+
+Note: This is automatically run when you run `yarn install`, but you can also run it manually with:
+
+```sh
+yarn bindings
 ```

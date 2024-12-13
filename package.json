@@ -11,7 +11,11 @@
     "start": "yarn workspace webapp start",
     "dev": "yarn workspace webapp dev",
     "build": "yarn workspace webapp build",
-    "lint": "yarn workspace webapp lint"
+    "build:contracts": "stellar contract build",
+    "bindings:account": "stellar contract bindings typescript --network testnet --contract-id CBGHASHQZIWWTJFWQOPEG5GXEJYV3XLQEQHDR4ABHZXUM5OYSS65U5T4 --output-dir packages/account --overwrite",
+    "bindings": "yarn bindings:account",
+    "lint": "yarn workspace webapp lint",
+    "postinstall": "yarn build:contracts && yarn bindings"
   },
   "devDependencies": {
     "typescript": "^5.7.2"
