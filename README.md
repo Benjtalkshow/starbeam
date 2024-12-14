@@ -3,6 +3,7 @@
 StarBeam is a smart Stellar wallet being developed as a Telegram mini app (currently in early stages of development).
 The goal is to create a wallet that will be tied to your Telegram account, allowing token transfers between Telegram users and regular Stellar wallets.
 Once completed, it will also serve as a foundation for other Stellar-based mini apps.
+Join https://t.me/starbeam_dev to stay updated.
 
 ## Upcoming Features
 
