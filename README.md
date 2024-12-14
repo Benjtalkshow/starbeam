@@ -43,19 +43,27 @@ See [SETUP](./SETUP.md) for more details
 
 ## Initializing the environment (create deployer identity, build contracts, deploy contracts and generate typescript bindings)
 
-`./initialize.sh`
+```sh
+./initialize.sh
+```
 
 ## Building the contracts
 
-`stellar contract build`
+```sh
+stellar contract build
+```
 
 ## Testing contracts
 
-`cargo test`
+```sh
+cargo test
+```
 
 ## Optimizing contracts
 
-`stellar contract optimize --wasm target/wasm32-unknown-unknown/release/account.wasm`
+```sh
+stellar contract optimize --wasm target/wasm32-unknown-unknown/release/account.wasm
+```
 
 ## Deploying contracts to testnet
 

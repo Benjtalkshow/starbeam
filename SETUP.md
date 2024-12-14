@@ -14,7 +14,9 @@ https://www.rust-lang.org/
 
 1. Install wasm target for Rust
 
-`rustup target add wasm32-unknown-unknown`
+```sh
+rustup target add wasm32-unknown-unknown
+```
 
 2. Install Stellar CLI
 
@@ -25,7 +27,9 @@ On Linux, you can install with Cargo: `cargo install --locked stellar-cli@22.0.1
 
 Run the `initialize.sh` script. It will create a deployer identity, build contracts, deploy contracts and generate typescript bindings.
 
-`./initialize.sh`
+```sh
+./initialize.sh
+```
 
 4. Use `localias` to debug the mini-app locally (optional)
 
@@ -34,14 +38,20 @@ You can use `localias` to redirect all requests to the mini-app host to your loc
 - Install `localias` from its repository: https://github.com/peterldowns/localias
 - Add alias for the mini-app hostname:
 
-    `localias set starbeam-webapp.vercel.app 3000`
+    ```sh
+    localias set starbeam-webapp.vercel.app 3000
+    ```
 
 - Start dev server:
 
-    `yarn dev`
+    ```sh
+    yarn dev
+    ```
 
 - Run localias:
 
-    `localias start`
+    ```sh
+    localias start
+    ```
 
 You can now open the mini-app in Telegram and it will be served from your local server.
