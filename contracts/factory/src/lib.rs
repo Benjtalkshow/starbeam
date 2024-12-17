@@ -13,10 +13,7 @@ pub struct FactoryContract;
 impl FactoryContract {
     // Deploy an account contract for a Telegram user
     pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, signature: BytesN<64>) -> Address {
-        // Verify ownership using the signature
-        if !verify_signature(&env, &telegram_uid, &signature) {
-            panic!("Invalid signature: Ownership verification failed");
-        }
+        //TODO Verify ownership using the signature
 
         // Check if an account already exists for the UID
         let existing_account: Option<Address> =
@@ -59,11 +56,6 @@ impl FactoryContract {
             .get(&Symbol::new(&env, "uid_to_account"));
         uid_to_account.and_then(|map| map.get(telegram_uid))
     }
-}
-
-// verify signature
-fn verify_signature(env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> bool {
-    true
 }
 
 // deploy an account contract
