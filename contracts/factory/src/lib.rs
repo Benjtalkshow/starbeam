@@ -7,17 +7,16 @@ mod account_contract {
 }
 
 #[contract]
-pub struct FactoryContract;
+pub struct Factory;
 
 #[contractimpl]
-impl FactoryContract {
+impl Factory {
     // Deploy an account contract for a Telegram user
-    pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, signature: BytesN<64>) -> Address {
+    pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, _signature: BytesN<64>) -> Address {
         //TODO Verify ownership using the signature
 
         // Check if an account already exists for the UID
-        let existing_account: Option<Address> =
-            FactoryContract::get_account(&env, telegram_uid.clone());
+        let existing_account: Option<Address> = Factory::get_account(&env, telegram_uid.clone());
         if existing_account.is_some() {
             panic!("Account already exists for this Telegram UID");
         }
@@ -76,3 +75,5 @@ fn deploy_account_contract(
 
     deployed_address
 }
+
+mod test;
