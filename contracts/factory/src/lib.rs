@@ -12,8 +12,11 @@ pub struct Factory;
 #[contractimpl]
 impl Factory {
     // Deploy an account contract for a Telegram user
-    pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, _signature: BytesN<64>) -> Address {
-        //TODO Verify ownership using the signature
+    pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, signature: BytesN<64>) -> Address {
+        // Verify ownership
+        if !verify_signature(&env, &telegram_uid, &signature) {
+            panic!("Invalid signature: Ownership verification failed");
+        }
 
         // Check if an account already exists for the UID
         let existing_account: Option<Address> = Factory::get_account(&env, telegram_uid.clone());
@@ -74,6 +77,12 @@ fn deploy_account_contract(
         .deploy(wasm_hash);
 
     deployed_address
+}
+
+//TODO
+fn verify_signature(env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> bool {
+    // using first byte of the signature and UID to simulate valid/invalid cases
+    signature.get(0) == telegram_uid.get(0)
 }
 
 mod test;

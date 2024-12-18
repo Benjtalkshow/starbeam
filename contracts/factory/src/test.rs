@@ -4,7 +4,7 @@ use super::{Factory, FactoryClient};
 use soroban_sdk::{BytesN, Env};
 
 #[test]
-fn test_factory() {
+fn test_deploy_account_with_valid_signature() {
     let env = Env::default();
     let factory_client = FactoryClient::new(&env, &env.register_contract(None, Factory));
 
@@ -19,6 +19,21 @@ fn test_factory() {
 }
 
 #[test]
+#[should_panic(expected = "Invalid signature: Ownership verification failed")]
+fn test_deploy_account_with_invalid_signature() {
+    let env = Env::default();
+    let factory_id = env.register_contract(None, Factory);
+    let factory_client = FactoryClient::new(&env, &factory_id);
+
+    // not matching the UID's first byte
+    let telegram_uid = BytesN::from_array(&env, &[1; 32]);
+    let invalid_signature = BytesN::from_array(&env, &[2; 64]);
+
+    // Attempt to deploy account with an invalid signature, should panic
+    factory_client.deploy_account(&telegram_uid, &invalid_signature);
+}
+
+#[test]
 #[should_panic(expected = "Account already exists for this Telegram UID")]
 fn test_redeploy_account() {
     let env = Env::default();
@@ -26,7 +41,7 @@ fn test_redeploy_account() {
     let factory_client = FactoryClient::new(&env, &factory_id);
 
     let telegram_uid = BytesN::from_array(&env, &[1; 32]);
-    let signature = BytesN::from_array(&env, &[2; 64]);
+    let signature = BytesN::from_array(&env, &[1; 64]);
 
     // Deploy account
     factory_client.deploy_account(&telegram_uid, &signature);
@@ -46,6 +61,5 @@ fn test_get_account_for_unmapped_uid() {
     // retrieve an account for an unmapped UID
     let retrieved_address = factory_client.get_account(&unmapped_uid);
 
-    // Assert that the result is None
     assert_eq!(retrieved_address, None);
 }
