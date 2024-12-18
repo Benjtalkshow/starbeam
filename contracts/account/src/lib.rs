@@ -1,17 +1,3 @@
-// #![no_std]
-// use soroban_sdk::{contract, contractimpl, vec, Env, String, Vec};
-
-// #[contract]
-// pub struct Contract;
-
-// #[contractimpl]
-// impl Contract {
-//     pub fn hello(env: Env, to: String) -> Vec<String> {
-//         vec![&env, String::from_str(&env, "Hello"), to]
-//     }
-// }
-
-// mod test;
 #![no_std]
 
 use soroban_sdk::{contractimpl, symbol, Address, Env, Bytes, IntoVal, TryFromVal};
@@ -33,7 +19,11 @@ impl AccountContract {
         amount: i64,
         telegram_signature: Vec<u8>,
     ) -> Result<(), &'static str> {
-        let stored_id: i64 = env.storage().get(&symbol!("telegram_user_id")).unwrap();
+        // Retrieve the stored Telegram user ID
+        let stored_id: i64 = match env.storage().get(&symbol!("telegram_user_id")) {
+            Some(id) => id,
+            None => return Err("Telegram user ID not initialized."),
+        };
 
         // Implement real signature verification logic here
         if telegram_signature.len() as i64 == stored_id {

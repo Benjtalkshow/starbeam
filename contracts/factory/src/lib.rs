@@ -23,11 +23,14 @@ impl FactoryContract {
         );
 
         // Initialize the account contract with Telegram User ID
-        env.invoke_contract(
+        let init_result = env.invoke_contract(
             &account_id,
             symbol!("initialize"),
             (telegram_user_id,),
         );
+        if let Err(e) = init_result {
+            return Err("Failed to initialize account contract.");
+        }
 
         Ok(account_id)
     }
