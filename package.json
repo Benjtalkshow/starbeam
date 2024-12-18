@@ -21,5 +21,8 @@
   },
   "devDependencies": {
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@telegram-apps/sdk": "^2.9.1"
   }
 }
