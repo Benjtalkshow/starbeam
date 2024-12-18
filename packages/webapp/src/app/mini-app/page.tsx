@@ -88,27 +88,4 @@ const MiniApp = () => {
     )
 }
 
-const MiniAppPage = () => {
-
-    const [isTelegram, setIsTelegram] = useState(false)
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setIsTelegram(window.navigator.userAgent.includes("Telegram"))
-        }
-    }, [])
-
-    if (!isTelegram) {
-        return (
-            <div className="flex flex-col items-center justify-center bg-white text-black px-5 py-3 rounded-md mt-[20%] w-fit mx-auto">
-                Not in a Telegram Window. Go to Telegram
-            </div>
-        )
-    }
-
-    return (
-        <MiniApp />
-    )
-}
-
-export default MiniAppPage
+export default MiniApp
