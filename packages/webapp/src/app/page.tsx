@@ -9,7 +9,12 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-center">Welcome to Starbeam</h1>
         
         <div className="flex flex-col gap-4 items-center">
-          <Link href={webappUrl} className="px-4 py-2 bg-white rounded-md text-black">
+          <Link
+            href={webappUrl}
+            className="px-4 py-2 bg-white rounded-md text-black"
+            aria-label="Open Starbeam application in Telegram"
+            rel="noopener noreferrer"
+          >
             Open Webapp in Telegram
           </Link>
         </div>
