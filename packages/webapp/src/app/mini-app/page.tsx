@@ -88,4 +88,14 @@ const MiniApp = () => {
     )
 }
 
-export default MiniApp
+const MiniAppPage = () => {
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    return isClient ? <MiniApp /> : null;
+}
+
+export default MiniAppPage
