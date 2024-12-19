@@ -1,21 +1,26 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, panic_with_error, token, Address, Bytes, BytesN, Env, Vec,
+    contract, contracterror, contractimpl, contracttype, token, Address, Bytes, Env,
 };
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {
-    InvalidSignature=1,
-    UnauthorizedTransfer=2,
-    TelegramIdNotSet=3,
+    InvalidSignature = 1,
+    UnauthorizedTransfer = 2,
+    TelegramIdNotSet = 3,
 }
 
 // Key for storing persistent data
 #[contracttype]
 pub enum DataKey {
+    /// Stores the associated Telegram user ID (u64) for this smart account.
+    /// This ID is used for signature verification and account control.
     TelegramUserId,
+
+    /// Stores the owner's address (Address) of this smart account.
+    /// The owner has administrative privileges and can be rotated.
     Owner,
 }
 
@@ -102,13 +107,21 @@ impl TelegramSmartAccount {
         // Verify the Telegram signature
         Self::verify_telegram_signature(&env, &signature)?;
 
+        // Get and authenticate current owner
+        let current_owner: Address = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Owner)
+            .ok_or(Error::UnauthorizedTransfer)?;
+        current_owner.require_auth();
+
         // Update the owner
         env.storage().persistent().set(&DataKey::Owner, &new_owner);
 
         Ok(())
     }
 
-    /// Get the current Telegram user ID associated with the account
+    // Update the owner only after both Telegram and current owner approve
     pub fn get_telegram_user_id(env: Env) -> Result<u64, Error> {
         env.storage()
             .persistent()
