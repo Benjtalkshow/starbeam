@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use super::{Factory, FactoryClient};
+use super::{generate_salt, Factory, FactoryClient};
 use soroban_sdk::{BytesN, Env};
 
 #[test]
@@ -62,4 +62,27 @@ fn test_get_account_for_unmapped_uid() {
     let retrieved_address = factory_client.get_account(&unmapped_uid);
 
     assert_eq!(retrieved_address, None);
+}
+
+#[test]
+fn test_generate_salt() {
+    let env = Env::default();
+
+    let telegram_uid_1 = BytesN::from_array(&env, &[1; 32]);
+    let signature_1 = BytesN::from_array(&env, &[1u8; 64]);
+
+    let telegram_uid_2 = BytesN::from_array(&env, &[2u8; 32]);
+    let signature_2 = BytesN::from_array(&env, &[2u8; 64]);
+
+    let telegram_uid_3 = BytesN::from_array(&env, &[3u8; 32]);
+    let signature_3 = BytesN::from_array(&env, &[3u8; 64]);
+
+    // generate salt
+    let salt_1 = generate_salt(&env, &telegram_uid_1, &signature_1);
+    let salt_2 = generate_salt(&env, &telegram_uid_2, &signature_2);
+    let salt_3 = generate_salt(&env, &telegram_uid_3, &signature_3);
+
+    // Assert the salts are different
+    assert_ne!(salt_1, salt_2);
+    assert_ne!(salt_3, salt_2);
 }

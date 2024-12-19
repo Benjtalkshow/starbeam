@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Map, Symbol};
+use soroban_sdk::{contract, contractimpl, Address, Bytes, BytesN, Env, Map, Symbol};
 
 // import account contract
 mod account_contract {
@@ -25,7 +25,7 @@ impl Factory {
         }
 
         let account_wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
-        let salt = BytesN::from_array(&env, &[0; 32]);
+        let salt = generate_salt(&env, &telegram_uid, &signature);
 
         // Deploy a new account contract
         let account_contract_address = deploy_account_contract(
@@ -83,6 +83,22 @@ fn deploy_account_contract(
 fn verify_signature(env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> bool {
     // using first byte of the signature and UID to simulate valid/invalid cases
     signature.get(0) == telegram_uid.get(0)
+}
+
+pub fn generate_salt(env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> BytesN<32> {
+    let mut combined_array = [0u8; 96];
+
+    // Copy telegram_uid and signature into combined_array
+    combined_array[0..32].copy_from_slice(telegram_uid.to_array().as_slice());
+    combined_array[32..96].copy_from_slice(signature.to_array().as_slice());
+
+    // Hash combined_array
+    let hash = env
+        .crypto()
+        .sha256(&Bytes::from_slice(env, &combined_array));
+
+    // Convert the hash to BytesN<32>
+    BytesN::from_array(env, &hash.to_array())
 }
 
 mod test;

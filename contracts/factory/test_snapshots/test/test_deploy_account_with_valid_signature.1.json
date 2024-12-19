@@ -45,7 +45,7 @@
                         "bytes": "0000000000000000000000000000000000000000000000000000000000000000"
                       },
                       "val": {
-                        "address": "CBKMUZNFQIAL775XBB2W2GP5CNHBM5YGH6C3XB7AY6SUVO2IBU3VYK2V"
+                        "address": "CAF2ADL2M2S6GU2TWL7ZKVUVW7ZSIXZMF2FQYBKUIYDNUNIVZLPPYWYZ"
                       }
                     }
                   ]
@@ -92,7 +92,7 @@
       [
         {
           "contract_data": {
-            "contract": "CBKMUZNFQIAL775XBB2W2GP5CNHBM5YGH6C3XB7AY6SUVO2IBU3VYK2V",
+            "contract": "CAF2ADL2M2S6GU2TWL7ZKVUVW7ZSIXZMF2FQYBKUIYDNUNIVZLPPYWYZ",
             "key": "ledger_key_contract_instance",
             "durability": "persistent"
           }
@@ -103,7 +103,7 @@
             "data": {
               "contract_data": {
                 "ext": "v0",
-                "contract": "CBKMUZNFQIAL775XBB2W2GP5CNHBM5YGH6C3XB7AY6SUVO2IBU3VYK2V",
+                "contract": "CAF2ADL2M2S6GU2TWL7ZKVUVW7ZSIXZMF2FQYBKUIYDNUNIVZLPPYWYZ",
                 "key": "ledger_key_contract_instance",
                 "durability": "persistent",
                 "val": {
@@ -232,7 +232,7 @@
               }
             ],
             "data": {
-              "address": "CBKMUZNFQIAL775XBB2W2GP5CNHBM5YGH6C3XB7AY6SUVO2IBU3VYK2V"
+              "address": "CAF2ADL2M2S6GU2TWL7ZKVUVW7ZSIXZMF2FQYBKUIYDNUNIVZLPPYWYZ"
             }
           }
         }
@@ -281,7 +281,7 @@
               }
             ],
             "data": {
-              "address": "CBKMUZNFQIAL775XBB2W2GP5CNHBM5YGH6C3XB7AY6SUVO2IBU3VYK2V"
+              "address": "CAF2ADL2M2S6GU2TWL7ZKVUVW7ZSIXZMF2FQYBKUIYDNUNIVZLPPYWYZ"
             }
           }
         }
