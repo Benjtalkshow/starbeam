@@ -32,9 +32,21 @@ pub enum DataKey {
 
 #[contracttype]
 pub struct SignatureVerification {
+    /// The Telegram user ID of the signer
     telegram_user_id: u64,
+    /// Monotonically increasing nonce to prevent replay attacks
     nonce: u64,
+    /// Ed25519 signature in bytes, must be exactly 64 bytes
     signature: Bytes,
+}
+
+impl SignatureVerification {
+    fn validate(&self) -> Result<(), Error> {
+        if self.signature.len() != 64 {
+            return Err(Error::InvalidSignature);
+        }
+        Ok(())
+    }
 }
 
 #[contract]
@@ -44,6 +56,11 @@ pub struct TelegramSmartAccount;
 impl TelegramSmartAccount {
     /// Initialize the smart account with a Telegram user ID
     pub fn initialize(env: Env, telegram_user_id: u64, owner: Address) -> Result<(), Error> {
+        // Validate telegram_user_id
+        if telegram_user_id == 0 {
+            return Err(Error::InvalidSignature);
+        }
+
         // Ensure the owner is authenticating this initialization
         owner.require_auth();
 
@@ -72,6 +89,9 @@ impl TelegramSmartAccount {
         env: &Env,
         verification: &SignatureVerification,
     ) -> Result<(), Error> {
+        // Validate signature format
+        verification.validate()?;
+
         // Get and validate nonce
         let last_nonce = env
             .storage()
@@ -93,6 +113,21 @@ impl TelegramSmartAccount {
         if verification.telegram_user_id != stored_telegram_user_id {
             return Err(Error::InvalidSignature);
         }
+
+        // // Verify Ed25519 signature
+        // let message = env.crypto().sha256(
+        //     &[
+        //         &verification.telegram_user_id.to_be_bytes(),
+        //         &verification.nonce.to_be_bytes(),
+        //     ]
+        //     .concat(),
+        // );
+        // if !env
+        //     .crypto()
+        //     .ed25519_verify(&verification.signature, &message, &TELEGRAM_PUBLIC_KEY)
+        // {
+        //     return Err(Error::InvalidSignature);
+        // }
 
         // Update nonce
         env.storage()
@@ -179,4 +214,3 @@ impl TelegramSmartAccount {
 }
 
 mod test;
-// mod types;
