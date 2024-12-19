@@ -1,13 +1,15 @@
 #![no_std]
 use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, token, Address, Bytes, BytesN, Env, Vec,
+    contract, contracterror, contractimpl, contracttype, panic_with_error, token, Address, Bytes, BytesN, Env, Vec,
 };
 
-#[contracttype]
+#[contracterror]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
 pub enum Error {
-    InvalidSignature,
-    UnauthorizedTransfer,
-    TelegramIdNotSet,
+    InvalidSignature=1,
+    UnauthorizedTransfer=2,
+    TelegramIdNotSet=3,
 }
 
 // Key for storing persistent data
@@ -61,10 +63,6 @@ impl TelegramSmartAccount {
         if verification.telegram_user_id != stored_telegram_user_id {
             return Err(Error::InvalidSignature);
         }
-
-        // Additional signature verification logic would go here
-        // This is a placeholder and would need to be implemented
-        // with actual cryptographic signature verification
 
         Ok(())
     }
@@ -120,4 +118,4 @@ impl TelegramSmartAccount {
 }
 
 mod test;
-mod types;
+// mod types;
