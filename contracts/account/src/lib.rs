@@ -14,6 +14,7 @@ pub enum Error {
     InvalidAmount = 5,
     InsufficientBalance = 6,
     InvalidTelegramId = 7,
+    InvalidAddress = 8,
 }
 
 // Key for storing persistent data
@@ -44,6 +45,12 @@ pub struct SignatureVerification {
 impl SignatureVerification {
     fn validate(&self) -> Result<(), Error> {
         if self.signature.len() != 64 {
+            return Err(Error::InvalidSignature);
+        }
+        if self.telegram_user_id == 0 {
+            return Err(Error::InvalidTelegramId);
+        }
+        if self.nonce == 0 || self.nonce == u64::MAX {
             return Err(Error::InvalidSignature);
         }
         Ok(())
@@ -170,10 +177,10 @@ impl TelegramSmartAccount {
         }
 
         // Transfer the specified amount
+        owner.require_auth();
         token_client.transfer(&env.current_contract_address(), &destination, &amount);
 
         // Emit transfer event
-        owner.require_auth();
         env.events().publish(("transfer",), (destination, amount));
 
         Ok(())
