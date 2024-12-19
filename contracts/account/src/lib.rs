@@ -10,6 +10,9 @@ pub enum Error {
     InvalidSignature = 1,
     UnauthorizedTransfer = 2,
     TelegramIdNotSet = 3,
+    AlreadyInitialized = 4,
+    InvalidAmount = 5,
+    InsufficientBalance = 6,
 }
 
 // Key for storing persistent data
@@ -22,6 +25,9 @@ pub enum DataKey {
     /// Stores the owner's address (Address) of this smart account.
     /// The owner has administrative privileges and can be rotated.
     Owner,
+
+    /// Stores the last nonce of this smart account.
+    LastNonce,
 }
 
 #[contracttype]
@@ -41,6 +47,11 @@ impl TelegramSmartAccount {
         // Ensure the owner is authenticating this initialization
         owner.require_auth();
 
+        // Prevent multiple initializations
+        if env.storage().persistent().has(&DataKey::Owner) {
+            return Err(Error::AlreadyInitialized);
+        }
+
         // Store the Telegram user ID
         env.storage()
             .persistent()
@@ -48,6 +59,10 @@ impl TelegramSmartAccount {
 
         // Store the owner address
         env.storage().persistent().set(&DataKey::Owner, &owner);
+
+        // Emit initialization event
+        env.events()
+            .publish(("initialized",), (telegram_user_id, owner));
 
         Ok(())
     }
@@ -57,6 +72,16 @@ impl TelegramSmartAccount {
         env: &Env,
         verification: &SignatureVerification,
     ) -> Result<(), Error> {
+        // Get and validate nonce
+        let last_nonce = env
+            .storage()
+            .persistent()
+            .get(&DataKey::LastNonce)
+            .unwrap_or(0u64);
+        if verification.nonce <= last_nonce {
+            return Err(Error::InvalidSignature);
+        }
+
         // Retrieve stored Telegram user ID
         let stored_telegram_user_id: u64 = env
             .storage()
@@ -69,6 +94,11 @@ impl TelegramSmartAccount {
             return Err(Error::InvalidSignature);
         }
 
+        // Update nonce
+        env.storage()
+            .persistent()
+            .set(&DataKey::LastNonce, &verification.nonce);
+
         Ok(())
     }
 
@@ -79,6 +109,11 @@ impl TelegramSmartAccount {
         destination: Address,
         amount: i128,
     ) -> Result<(), Error> {
+        // Validate amount
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+
         // Verify the Telegram signature
         Self::verify_telegram_signature(&env, &signature)?;
 
@@ -92,8 +127,17 @@ impl TelegramSmartAccount {
         // Create a token client for the native XLM token
         let token_client = token::TokenClient::new(&env, &env.current_contract_address());
 
+        // Check balance
+        let balance = token_client.balance(&env.current_contract_address());
+        if balance < amount {
+            return Err(Error::InsufficientBalance);
+        }
+
         // Transfer the specified amount
         token_client.transfer(&env.current_contract_address(), &destination, &amount);
+
+        // Emit transfer event
+        env.events().publish(("transfer",), (destination, amount));
 
         Ok(())
     }
@@ -117,6 +161,10 @@ impl TelegramSmartAccount {
 
         // Update the owner
         env.storage().persistent().set(&DataKey::Owner, &new_owner);
+
+        // Emit owner rotation event
+        env.events()
+            .publish(("owner_rotated",), (current_owner.clone(), new_owner));
 
         Ok(())
     }
