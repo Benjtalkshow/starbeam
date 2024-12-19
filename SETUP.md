@@ -59,4 +59,4 @@ You can now open the mini-app in Telegram and it will be served from your local 
 
 # Setting up Testing Environment for Telegram Bots
 
-To set up the testing environment for the Telegram bot associated with this project, please refer to the [Telegram Testing Setup Guide](./docs/telegram-setup.md.md). This guide will walk you through the process of creating and configuring a bot, setting up the Telegram app, and testing locally with Ngrok.
+To set up the testing environment for the Telegram bot associated with this project, please refer to the [Telegram Testing Setup Guide](./docs/telegram-setup.md). This guide will walk you through the process of creating and configuring a bot, setting up the Telegram app, and testing locally with Ngrok.
