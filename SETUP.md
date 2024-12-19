@@ -55,3 +55,8 @@ You can use `localias` to redirect all requests to the mini-app host to your loc
     ```
 
 You can now open the mini-app in Telegram and it will be served from your local server.
+
+
+# Setting up Testing Environment for Telegram Bots
+
+To set up the testing environment for the Telegram bot associated with this project, please refer to the [Telegram Testing Setup Guide](#). This guide will walk you through the process of creating and configuring a bot, setting up the Telegram app, and testing locally with Ngrok.

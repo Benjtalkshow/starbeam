@@ -14,7 +14,7 @@ This guide is designed for future contributors to configure the testing environm
 
 1. **Start a conversation with BotFather**:
    - Open Telegram and search for **BotFather**. This is the official bot provided by Telegram for managing other bots.
-   - Start the chat with `/start` to view the list of commands.
+   - Start the chat with `/start` to view the list of commands. 
 
 2. **Create a New Bot**:
    - Type `/newbot` to create a new bot.
@@ -42,7 +42,7 @@ This guide is designed for future contributors to configure the testing environm
 
 4. **Enter Website URL**:
    - Telegram will ask for a **website URL**. This is where your app will be hosted.
-   
+
 ---
 
 ## Step 3: Run the Project Locally
@@ -76,6 +76,22 @@ Once you've configured the app and linked it to your bot with the Ngrok URL:
 
 - Your app will now be live, and users can interact with it via Telegram.
 - If you want to update the details (e.g., description, image, URL), you can always return to BotFather and modify the settings.
+
+---
+
+## Important Environment Variables: BOT_TOKEN and WEBAPP_URL
+
+### BOT_TOKEN:
+The **BOT_TOKEN** is a unique access token provided by **BotFather** when you create your bot. This token is used to authenticate your bot and interact with the Telegram Bot API. It is critical that you store this token securely and do not share it publicly.
+
+- You will use the **BOT_TOKEN** in your project to interact with the Telegram API programmatically.
+- Always keep this token private, as anyone with access to it can control your bot.
+
+### WEBAPP_URL:
+The **WEBAPP_URL** refers to the publicly accessible URL of your app, which is required for Telegram to link to your bot. Since Telegram requires an internet-accessible URL for your app, **Ngrok** is used to create a temporary public URL that forwards to your local server.
+
+- The **WEBAPP_URL** is typically the **Ngrok URL** (e.g., `http://abc123.ngrok.io`) and should be provided when configuring the app in **BotFather**.
+- If you're deploying your app to a production environment, you can update the **WEBAPP_URL** to reflect your actual hosting URL.
 
 ---
 
