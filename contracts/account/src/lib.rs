@@ -13,6 +13,7 @@ pub enum Error {
     AlreadyInitialized = 4,
     InvalidAmount = 5,
     InsufficientBalance = 6,
+    InvalidTelegramId = 7,
 }
 
 // Key for storing persistent data
@@ -58,7 +59,7 @@ impl TelegramSmartAccount {
     pub fn initialize(env: Env, telegram_user_id: u64, owner: Address) -> Result<(), Error> {
         // Validate telegram_user_id
         if telegram_user_id == 0 {
-            return Err(Error::InvalidSignature);
+            return Err(Error::InvalidTelegramId);
         }
 
         // Ensure the owner is authenticating this initialization
@@ -172,6 +173,7 @@ impl TelegramSmartAccount {
         token_client.transfer(&env.current_contract_address(), &destination, &amount);
 
         // Emit transfer event
+        owner.require_auth();
         env.events().publish(("transfer",), (destination, amount));
 
         Ok(())
@@ -192,7 +194,14 @@ impl TelegramSmartAccount {
             .persistent()
             .get(&DataKey::Owner)
             .ok_or(Error::UnauthorizedTransfer)?;
+
+        // Prevent rotation to same owner
+        if current_owner == new_owner {
+            return Err(Error::InvalidAmount); // Consider adding InvalidAddress error
+        }
+
         current_owner.require_auth();
+        new_owner.require_auth();
 
         // Update the owner
         env.storage().persistent().set(&DataKey::Owner, &new_owner);
