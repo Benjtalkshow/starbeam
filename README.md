@@ -20,7 +20,7 @@ Before setting up the development environment for the **StarBeam** Stellar walle
 
 For detailed instructions on how to accomplish these steps, please go to the guide below:
 
-### [Setting up Testing Environment in Telegram](./SETUP_TELEGRAM.md)
+### [Setting up Testing Environment in Telegram](./docs/telegram-setup.md.md)
 
 ## Upcoming Features
 
