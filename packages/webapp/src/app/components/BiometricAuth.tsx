@@ -157,10 +157,13 @@ export default function BiometricAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isComponentMounted = true;
     const initializeBiometry = async () => {
       try {
         if (!biometry.mount.isAvailable()) {
-          setError('Biometric authentication is not available');
+          if (isComponentMounted) {
+            setError('Biometric authentication is not available');
+          }
           return;
         }
 
@@ -173,9 +176,6 @@ export default function BiometricAuth() {
 
         if (!biometry.authenticate.isAvailable()) {
           setError('Biometric authentication is not available after mounting');
-          return;
-        }
-
         const { status, token } = await biometry.authenticate({
           reason: 'Please authenticate to continue',
         });
@@ -184,16 +184,29 @@ export default function BiometricAuth() {
           setIsAuthenticated(true);
           console.log('Authentication successful');
         } else {
-          setError('Biometric authentication failed');
+          if (isComponentMounted) {
+            setIsAuthenticated(true);
+          }
+          console.log('Authentication successful');
+        } else {
+          if (isComponentMounted) {
+            setError('Biometric authentication failed');
+          }
         }
       } catch (err) {
         console.error('Biometry error:', err);
-        setError(err instanceof Error ? err.message : 'Authentication failed');
+        if (isComponentMounted) {
+          setError(err instanceof Error ? err.message : 'Authentication failed');
+        }
       }
     };
 
     initializeBiometry();
 
+    return () => {
+      isComponentMounted = false;
+      // Add any necessary cleanup
+    };
     // Cleanup function
     return () => {
       // Add any necessary cleanup
