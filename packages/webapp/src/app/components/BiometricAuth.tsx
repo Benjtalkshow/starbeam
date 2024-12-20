@@ -205,17 +205,11 @@ export default function BiometricAuth() {
 
     return () => {
       isComponentMounted = false;
-      // Add any necessary cleanup
-    };
-    // Cleanup function
-    return () => {
-      // Add any necessary cleanup
+      if (biometry.isMounted()) {
+        biometry.unmount();
+      }
     };
   }, []);
-
-  if (error) {
-    return <div className="text-red-500 p-4">{error}</div>;
-  }
 
   if (!isAuthenticated) {
     return <div className="p-4">Authenticating with biometrics...</div>;
