@@ -182,7 +182,7 @@ export default function BiometricAuth() {
 
         if (status === 'authorized') {
           setIsAuthenticated(true);
-          console.log(`Authorized. Token: ${token}`);
+          console.log('Authentication successful');
         } else {
           setError('Biometric authentication failed');
         }
