@@ -3,6 +3,26 @@
 use super::{generate_salt, Factory, FactoryClient};
 use soroban_sdk::{BytesN, Env};
 
+// import account contract
+mod account_contract {
+    soroban_sdk::contractimport!(file = "../../target/wasm32-unknown-unknown/release/account.wasm");
+}
+
+// Test init function
+#[should_panic(expected = "Already Inited")]
+#[test]
+fn test_init() {
+    let env = Env::default();
+    let factory_client = FactoryClient::new(&env, &env.register_contract(None, Factory));
+
+    let wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
+
+    // Call init
+    factory_client.init(&wasm_hash);
+    // Attempt to initialize again
+    factory_client.init(&wasm_hash);
+}
+
 #[test]
 fn test_deploy_account_with_valid_signature() {
     let env = Env::default();
@@ -10,6 +30,9 @@ fn test_deploy_account_with_valid_signature() {
 
     let telegram_uid = BytesN::from_array(&env, &[0; 32]);
     let signature = BytesN::from_array(&env, &[0; 64]);
+
+    let wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
+    factory_client.init(&wasm_hash);
 
     let address = factory_client.deploy_account(&telegram_uid, &signature);
 
@@ -24,6 +47,9 @@ fn test_deploy_account_with_invalid_signature() {
     let env = Env::default();
     let factory_id = env.register_contract(None, Factory);
     let factory_client = FactoryClient::new(&env, &factory_id);
+
+    let wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
+    factory_client.init(&wasm_hash);
 
     // not matching the UID's first byte
     let telegram_uid = BytesN::from_array(&env, &[1; 32]);
@@ -42,6 +68,9 @@ fn test_redeploy_account() {
 
     let telegram_uid = BytesN::from_array(&env, &[1; 32]);
     let signature = BytesN::from_array(&env, &[1; 64]);
+
+    let wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
+    factory_client.init(&wasm_hash);
 
     // Deploy account
     factory_client.deploy_account(&telegram_uid, &signature);

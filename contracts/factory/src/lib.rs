@@ -1,16 +1,23 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, Bytes, BytesN, Env, Map, Symbol};
-
-// import account contract
-mod account_contract {
-    soroban_sdk::contractimport!(file = "../../target/wasm32-unknown-unknown/release/account.wasm");
-}
+use soroban_sdk::{contract, contractimpl, symbol_short, Address, Bytes, BytesN, Env, Map, Symbol};
 
 #[contract]
 pub struct Factory;
 
+const ACCOUNT_CONTRACT_WASM_HASH: Symbol = symbol_short!("hash");
+
 #[contractimpl]
 impl Factory {
+    pub fn init(env: Env, wasm_hash: BytesN<32>) {
+        if env.storage().instance().has(&ACCOUNT_CONTRACT_WASM_HASH) {
+            panic!("Already Inited");
+        }
+
+        env.storage()
+            .instance()
+            .set(&ACCOUNT_CONTRACT_WASM_HASH, &wasm_hash);
+    }
+
     // Deploy an account contract for a Telegram user
     pub fn deploy_account(env: Env, telegram_uid: BytesN<32>, signature: BytesN<64>) -> Address {
         // Verify ownership
@@ -24,7 +31,12 @@ impl Factory {
             panic!("Account already exists for this Telegram UID");
         }
 
-        let account_wasm_hash = env.deployer().upload_contract_wasm(account_contract::WASM);
+        let account_wasm_hash = env
+            .storage()
+            .instance()
+            .get::<Symbol, BytesN<32>>(&ACCOUNT_CONTRACT_WASM_HASH)
+            .unwrap_or_else(|| panic!("Not Inited",));
+
         let salt = generate_salt(&env, &telegram_uid, &signature);
 
         // Deploy a new account contract
@@ -80,7 +92,7 @@ fn deploy_account_contract(
 }
 
 //TODO
-fn verify_signature(env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> bool {
+fn verify_signature(_env: &Env, telegram_uid: &BytesN<32>, signature: &BytesN<64>) -> bool {
     // using first byte of the signature and UID to simulate valid/invalid cases
     signature.get(0) == telegram_uid.get(0)
 }
