@@ -6,7 +6,10 @@ import BiometricAuth from './components/BiometricAuth';
 import { init } from '@/lib/init';
 
 export default function Home() {
-  const webappUrl = process.env.NEXT_PUBLIC_WEBAPP_URL || 'https://t.me/StarBeamBot/wallet';
+  const webappUrl = process.env.NEXT_PUBLIC_WEBAPP_URL;
+  if (!webappUrl) {
+    throw new Error('NEXT_PUBLIC_WEBAPP_URL environment variable is not set');
+  }
 
   useEffect(() => {
     // Initialize the SDK when the component mounts
