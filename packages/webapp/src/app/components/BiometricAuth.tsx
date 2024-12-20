@@ -1,219 +1,147 @@
-// import { useState, useEffect } from 'react';
+'use client'
 
-// declare global {
-//   interface Window {
-//     Telegram?: {
-//       WebApp?: {
-//         ready: () => void;
-//         showAlert: (message: string) => Promise<void>;
-//         initDataUnsafe: {
-//           user?: {
-//             id: number;
-//             first_name: string;
-//             last_name?: string;
-//             username?: string;
-//           };
-//         };
-//         requestBiometric: (params: {
-//           purpose: 'auth' | 'confirm_action';
-//           title: string;
-//           subtitle?: string;
-//         }) => Promise<{ success: boolean }>;
-//         availableBiometrics: () => Promise<{ 
-//           isBiometryAvailable: boolean;
-//           biometryType: 'face' | 'fingerprint' | 'none';
-//         }>;
-//       };
-//     };
-//   }
-// }
+import { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Fingerprint, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
-// export default function BiometricAuth() {
-//   const [isInTelegram, setIsInTelegram] = useState(false);
-//   const [isAvailable, setIsAvailable] = useState(false);
-//   const [biometryType, setBiometryType] = useState<'face' | 'fingerprint' | 'none'>('none');
-//   const [isVerified, setIsVerified] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-//   const [status, setStatus] = useState<string>('Checking environment...');
+// Mock functions to simulate Telegram Mini App SDK behavior
+const mockMiniApp = {
+  isSupported: () => true,
+  showPopup: async () => {}
+}
 
-//   useEffect(() => {
-//     const checkEnvironment = async () => {
-//       // Check if running in Telegram WebApp
-//       const tg = window.Telegram?.WebApp;
-//       if (!tg) {
-//         setStatus('Not running in Telegram. Please open this app in Telegram.');
-//         return;
-//       }
-
-//       setIsInTelegram(true);
-//       tg.ready();
-//       setStatus('Checking biometric availability...');
-
-//       try {
-//         const biometryStatus = await tg.availableBiometrics();
-//         setIsAvailable(biometryStatus.isBiometryAvailable);
-//         setBiometryType(biometryStatus.biometryType);
-//         setStatus(biometryStatus.isBiometryAvailable 
-//           ? `Ready to use ${biometryStatus.biometryType} authentication` 
-//           : 'Biometric authentication not available');
-//       } catch (err) {
-//         setStatus('Failed to check biometry availability');
-//         setIsAvailable(false);
-//       }
-//     };
-
-//     checkEnvironment();
-//   }, []);
-
-//   const handleBiometricVerification = async () => {
-//     const tg = window.Telegram?.WebApp;
-//     if (!tg) {
-//       setError("Please open this app in Telegram");
-//       return;
-//     }
-
-//     setStatus('Requesting biometric verification...');
-
-//     try {
-//       const result = await tg.requestBiometric({
-//         purpose: 'auth',
-//         title: 'Verify Your Identity',
-//         subtitle: 'Use biometric authentication to verify ownership'
-//       });
-
-//       if (result.success) {
-//         setIsVerified(true);
-//         setError(null);
-//         setStatus('Successfully verified!');
-//         await tg.showAlert("Verification successful!");
-//       } else {
-//         setError("Verification failed");
-//         setStatus('Verification failed. Please try again.');
-//       }
-//     } catch (err) {
-//       setError("Verification failed or was cancelled");
-//       setStatus('Verification failed or was cancelled. Please try again.');
-//     }
-//   };
-
-//   return (
-//     <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md">
-//       <div className="text-center mb-4">
-//         <h2 className="text-xl font-bold text-gray-800">Biometric Authentication</h2>
-//         <p className="text-sm text-gray-600 mt-1">{status}</p>
-//       </div>
-
-//       {!isInTelegram && (
-//         <div className="p-4 bg-yellow-50 rounded-lg">
-//           <p className="text-yellow-700">
-//             ⚠️ This app must be opened in Telegram to use biometric authentication.
-//           </p>
-//         </div>
-//       )}
-
-//       {isInTelegram && !isAvailable && (
-//         <div className="p-4 bg-yellow-50 rounded-lg">
-//           <p className="text-yellow-700">
-//             ⚠️ Biometric authentication is not available on your device.
-//           </p>
-//         </div>
-//       )}
-
-//       {error && (
-//         <div className="p-4 bg-red-50 rounded-lg mt-4">
-//           <p className="text-red-600">{error}</p>
-//         </div>
-//       )}
-
-//       {isVerified && (
-//         <div className="p-4 bg-green-50 rounded-lg mt-4">
-//           <p className="text-green-600">✅ Identity verified successfully!</p>
-//           <p className="text-sm text-green-500 mt-1">
-//             Verified using {biometryType === 'face' ? 'Face ID' : 'Fingerprint'}
-//           </p>
-//         </div>
-//       )}
-
-//       {isInTelegram && isAvailable && !isVerified && (
-//         <button
-//           onClick={handleBiometricVerification}
-//           className="w-full mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-//         >
-//           {biometryType === 'face' ? 'Verify with Face ID' : 'Verify with Fingerprint'}
-//         </button>
-//       )}
-//     </div>
-//   );
-// }
-
-
-'use client';
-
-import { useEffect, useState } from 'react';
-import { biometry } from "@telegram-apps/sdk-react";
+const mockBiometry = {
+  isSupported: async () => true,
+  getType: async () => 'fingerprint' as 'fingerprint' | 'face',
+  requestBiometry: async () => ({ success: true })
+}
 
 export default function BiometricAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isAvailable, setIsAvailable] = useState(false)
+  const [biometryType, setBiometryType] = useState<'face' | 'fingerprint' | 'none'>('none')
+  const [isVerified, setIsVerified] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<string>('Initializing...')
 
   useEffect(() => {
-    let isComponentMounted = true;
-    const initializeBiometry = async () => {
+    const checkBiometrySupport = async () => {
       try {
-        if (!biometry.mount.isAvailable()) {
-          if (isComponentMounted) {
-            setError('Biometric authentication is not available');
-          }
-          return;
-        }
-
-        await biometry.mount();
+        setStatus('Checking biometry support...')
         
-        if (!biometry.isMounted()) {
-          setError('Failed to mount biometric authentication');
-          return;
+        // Check if running in Telegram Mini App (using mock for demonstration)
+        if (!mockMiniApp.isSupported()) {
+          setStatus('Not running in Telegram Mini App')
+          return
         }
 
-        if (!biometry.authenticate.isAvailable()) {
-          setError('Biometric authentication is not available after mounting');
-        const { status, token } = await biometry.authenticate({
-          reason: 'Please authenticate to continue',
-        });
-
-        if (status === 'authorized') {
-          setIsAuthenticated(true);
-          console.log('Authentication successful');
+        // Check biometry availability
+        const biometrySupport = await mockBiometry.isSupported()
+        setIsAvailable(biometrySupport)
+        
+        if (biometrySupport) {
+          // Get biometry type
+          const type = await mockBiometry.getType()
+          setBiometryType(type)
+          setStatus(`Ready to use ${type} authentication`)
         } else {
-          if (isComponentMounted) {
-            setIsAuthenticated(true);
-          }
-          console.log('Authentication successful');
-        } else {
-          if (isComponentMounted) {
-            setError('Biometric authentication failed');
-          }
+          setStatus('Biometric authentication not available')
         }
       } catch (err) {
-        console.error('Biometry error:', err);
-        if (isComponentMounted) {
-          setError(err instanceof Error ? err.message : 'Authentication failed');
-        }
+        setStatus('Failed to initialize biometry')
+        setError(err instanceof Error ? err.message : 'Unknown error')
       }
-    };
+    }
 
-    initializeBiometry();
+    checkBiometrySupport()
+  }, [])
 
-    return () => {
-      isComponentMounted = false;
-      if (biometry.isMounted()) {
-        biometry.unmount();
+  const handleBiometricVerification = async () => {
+    try {
+      setStatus('Requesting biometric verification...')
+      
+      const result = await mockBiometry.requestBiometry({
+        title: 'Verify Your Identity',
+        description: 'Please verify your identity using biometrics'
+      })
+
+      if (result.success) {
+        setIsVerified(true)
+        setError(null)
+        setStatus('Successfully verified!')
+        
+        // Show success message using Mini App native UI (mocked)
+        await mockMiniApp.showPopup({
+          title: 'Success',
+          message: 'Identity verified successfully!',
+          buttons: [{ type: 'ok' }]
+        })
+      } else {
+        throw new Error('Verification failed')
       }
-    };
-  }, []);
-
-  if (!isAuthenticated) {
-    return <div className="p-4">Authenticating with biometrics...</div>;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed')
+      setStatus('Verification failed. Please try again.')
+    }
   }
 
-  return null;
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Biometric Authentication</CardTitle>
+        <CardDescription>{status}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!mockMiniApp.isSupported() && (
+          <Alert variant="warning">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>
+              This app must be opened in Telegram Mini App.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {mockMiniApp.isSupported() && !isAvailable && (
+          <Alert variant="warning">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>
+              Biometric authentication is not available on your device.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {isVerified && (
+          <Alert variant="success" className="mt-4">
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertTitle>Success</AlertTitle>
+            <AlertDescription>
+              Identity verified successfully! Verified using {biometryType}.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {mockMiniApp.isSupported() && isAvailable && !isVerified && (
+          <Button
+            onClick={handleBiometricVerification}
+            className="w-full mt-4"
+          >
+            <Fingerprint className="mr-2 h-4 w-4" />
+            Verify with {biometryType === 'face' ? 'Face ID' : 'Fingerprint'}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
+
