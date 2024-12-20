@@ -344,7 +344,7 @@
             "data": {
               "vec": [
                 {
-                  "string": "caught panic 'Account already exists for this Telegram UID' from contract function 'Symbol(obj#49)'"
+                  "string": "caught panic 'Account already exists for this Telegram UID' from contract function 'Symbol(obj#47)'"
                 },
                 {
                   "bytes": "0101010101010101010101010101010101010101010101010101010101010101"

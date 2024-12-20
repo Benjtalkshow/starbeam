@@ -79,10 +79,6 @@ fn deploy_account_contract(
     wasm_hash: BytesN<32>,
     salt: BytesN<32>,
 ) -> Address {
-    if deployer != env.current_contract_address() {
-        deployer.require_auth();
-    }
-
     let deployed_address = env
         .deployer()
         .with_address(deployer, salt)
