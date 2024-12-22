@@ -6,7 +6,7 @@ import { Client, networks } from "@/../../../.soroban/account/src";
 
 const greeter = new Client({
   ...networks.testnet,
-  rpcUrl: "https://soroban-testnet.stellar.org", 
+  rpcUrl: process.env.NEXT_PUBLIC_SOROBAN_RPC_URL || "https://soroban-testnet.stellar.org", 
 });
 
 const MiniApp = () => {
@@ -19,50 +19,50 @@ const MiniApp = () => {
 
     useEffect(() => {
         const initializeComponent = async () => {
-        try {
-            if (launchParams?.initData) {
-            const initData = launchParams.initData;
-            const uid = initData.user?.id;
-            const name = initData.user?.firstName + " " + initData.user?.lastName;
-            setUserId(uid ?? null);
-            setName(name);
+            try {
+                if (launchParams?.initData) {
+                    const initData = launchParams.initData;
+                    const uid = initData.user?.id;
+                    const name = initData.user?.firstName + " " + initData.user?.lastName;
+                    setUserId(uid ?? null);
+                    setName(name);
 
-            // Check if biometry is available and mount it
-            if (biometry.mount.isAvailable()) {
-                try {
-                await biometry.mount();
-                if (biometry.isMounted()) {
-                    // Attempt to authenticate the user
-                    if (biometry.authenticate.isAvailable()) {
-                    const { status, token } = await biometry.authenticate({
-                        reason: 'Please authenticate to continue',
-                    });
+                    // Check if biometry is available and mount it
+                    if (biometry.mount.isAvailable()) {
+                        try {
+                            await biometry.mount();
+                            if (biometry.isMounted()) {
+                                // Attempt to authenticate the user
+                                if (biometry.authenticate.isAvailable()) {
+                                    const { status, token } = await biometry.authenticate({
+                                        reason: 'Please authenticate to continue',
+                                    });
 
-                    if (status === 'authorized') {
-                        console.log(`Authorized. Token: ${token}`);
+                                    if (status === 'authorized') {
+                                        console.log(`Authorized. Token: ${token}`);
+                                    } else {
+                                        console.log('Not authorized');
+                                        setError("Biometry authentication failed");
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Error during biometry mounting:", err);
+                            setError("Biometry mounting failed");
+                        }
                     } else {
-                        console.log('Not authorized');
-                        setError("Biometry authentication failed");
+                        console.log("Biometry is not available");
                     }
-                    }
+                } else {
+                    console.log("No initData available");
+                    setError("No initData provided");
                 }
-                } catch (err) {
-                console.error("Error during biometry mounting:", err);
-                setError("Biometry mounting failed");
-                }
-            } else {
-                console.log("Biometry is not available");
+            } catch (error) {
+                console.error("Error in initializeComponent:", error);
+                setError("An error occurred while initializing the component");
+            } finally {
+                setIsLoading(false);
             }
-            } else {
-            console.log("No initData available");
-            setError("No initData provided");
-            }
-        } catch (error) {
-            console.error("Error in initializeComponent:", error);
-            setError("An error occurred while initializing the component");
-        } finally {
-            setIsLoading(false);
-        }
         };
 
         const fetchGreeting = async () => {
@@ -99,7 +99,7 @@ const MiniApp = () => {
                     </div>
                     <div className="text-lg">
                         User ID: <span className="font-mono">{userId || 'Not available'}</span><br />
-                        <h1>{greeting ? greeting : "Loading greeting..."}</h1>
+                        <h1>{greeting || "Loading..."}</h1>
                     </div>
                 </div>
             </main>
@@ -118,3 +118,4 @@ const MiniAppPage = () => {
 }
 
 export default MiniAppPage;
+
