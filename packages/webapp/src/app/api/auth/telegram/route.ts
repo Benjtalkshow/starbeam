@@ -1,4 +1,3 @@
-// packages/webapp/src/app/api/auth/telegram/route.ts
 import { NextResponse } from 'next/server';
 import { createHash, createHmac } from 'crypto';
 
