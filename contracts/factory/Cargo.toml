@@ -1,13 +1,15 @@
 [package]
 name = "factory"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
-
-[dependencies]
-soroban-sdk = "21.0.0"
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
+doctest = false
 
-[profile.release]
-lto = true
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
