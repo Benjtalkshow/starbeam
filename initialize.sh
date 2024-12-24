@@ -2,45 +2,93 @@
 
 set -e
 
-if [[ -f "./.stellar/contract-ids/account.json" ]]; then
-  echo "Found existing './.stellar' directory; already initialized."
-  exit 0
-fi
+NETWORK="testnet"
+RPC_URL="https://soroban-testnet.stellar.org"
+NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
+CONTRACT_WASM="target/wasm32-unknown-unknown/release/account.wasm"
+CONTRACT_ALIAS="account"
+CONTRACT_ID_FILE=".soroban/account-id"
 
-# TODO: Support pinned binary, but with updated version
+# Ensure necessary directories
+mkdir -p .soroban
+mkdir -p shared
 
-# if [[ -f "./target/bin/stellar" ]]; then
-#   echo "Using stellar binary from ./target/bin"
-# else
-#   echo "Building pinned stellar binary"
-#   cargo install_stellar_cli
-# fi
+echo "Using $NETWORK network..."
 
+# Function to write config and check for errors
+write_config() {
+    echo "$2" > "$1" || { echo "Error writing to $1"; exit 1; }
+    [[ -s "$1" ]] || { echo "Failed to write to $1"; exit 1; }
+}
 
-# TODO: support standalone network (run from docker)
-NETWORK="futurenet"
+# Add network configuration with validation
+write_config "./.soroban/network" "$NETWORK"
+write_config "./.soroban/rpc-url" "$RPC_URL"
+write_config "./.soroban/passphrase" "$NETWORK_PASSPHRASE"
 
-echo "Using $NETWORK network"
+# Write JSON config
+CONFIG_JSON=$(cat <<EOF
+{
+  "network": "$NETWORK",
+  "rpcUrl": "$RPC_URL",
+  "networkPassphrase": "$NETWORK_PASSPHRASE"
+}
+EOF
+)
+write_config "./shared/config.json" "$CONFIG_JSON"
 
-if !(stellar keys ls | grep deployer 2>&1 >/dev/null); then
-  echo Create the deployer identity
-  stellar keys generate deployer --network futurenet --fund
+# Check if deployer identity exists; create if not
+if ! soroban keys ls | grep -q alice; then
+  echo "Creating deployer identity 'alice'..."
+  soroban keys generate alice --network "$NETWORK" --rpc-url "$RPC_URL" --network-passphrase "$NETWORK_PASSPHRASE"
+  soroban keys fund alice --network "$NETWORK"
 else
-  echo "Deployer identity already exists"
+  echo "Deployer identity 'alice' already exists."
 fi
-ABUNDANCE_ADMIN_ADDRESS="$(stellar keys address deployer)"
 
-ARGS="--network $NETWORK --source deployer"
+# Build contracts
+echo "Building contracts..."
+if ! yarn build:contracts; then
+  echo "Failed to build contracts"
+  exit 1
+fi
 
-echo Build contracts
-stellar contract build
+# Check for WASM file
+if [ ! -f "$CONTRACT_WASM" ]; then
+  echo "Contract WASM not found. Build may have failed."
+  exit 1
+fi
 
-echo Deploy the abundance token contract
-ACCOUNT_ID="$(
-  stellar contract deploy $ARGS \
-    --wasm target/wasm32-unknown-unknown/release/account.wasm \
-    --alias account
-)"
-echo "Contract deployed succesfully with ID: $ACCOUNT_ID"
+# Deploy the contract
+if [[ ! -f "$CONTRACT_ID_FILE" ]]; then
+  echo "Deploying contract '$CONTRACT_ALIAS'..."
+  if ! soroban contract deploy \
+    --wasm "$CONTRACT_WASM" \
+    --source alice \
+    --network "$NETWORK" \
+    --rpc-url "$RPC_URL" \
+    --network-passphrase "$NETWORK_PASSPHRASE" \
+    --fee 1000000 > "$CONTRACT_ID_FILE"
+  then
+    echo "Failed to deploy contract"
+    exit 1
+  fi
+  echo "Contract deployed successfully with ID: $(cat "$CONTRACT_ID_FILE")"
+else
+  echo "Contract already deployed. Skipping deployment."
+fi
 
-# TODO: invoke contracts to initialize them
+# Check for contract ID file
+if [ ! -f "$CONTRACT_ID_FILE" ]; then
+  echo "Contract ID file not found. Deployment may have failed."
+  exit 1
+fi
+
+# Generate TypeScript bindings
+echo "Generating TypeScript bindings..."
+if ! yarn bindings; then
+  echo "Failed to generate TypeScript bindings"
+  exit 1
+fi
+
+echo "Initialization complete."
