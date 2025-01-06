@@ -2,12 +2,7 @@
 
 import { useLaunchParams, biometry } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
-import { Client, networks } from "@/../../../.soroban/account/src";
-
-const greeter = new Client({
-  ...networks.testnet,
-  rpcUrl: process.env.NEXT_PUBLIC_SOROBAN_RPC_URL || "https://soroban-testnet.stellar.org", 
-});
+import BiometricAuth from "../components/BiometricAuth";
 
 const MiniApp = () => {
     const launchParams = useLaunchParams();
@@ -15,7 +10,6 @@ const MiniApp = () => {
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
     const [name, setName] = useState<string | null>(null);
-    const [greeting, setGreeting] = useState<string | null>(null);
 
     useEffect(() => {
         const initializeComponent = async () => {
@@ -65,19 +59,7 @@ const MiniApp = () => {
             }
         };
 
-        const fetchGreeting = async () => {
-            try {
-                const response = await greeter.hello({ to: "Soroban" });
-                const greetingText = response.result?.join(" ") || "No greeting received";
-                setGreeting(greetingText);
-            } catch (error) {
-                console.error("Error fetching greeting:", error);
-                setError("Failed to fetch greeting");
-            }
-        };
-
         initializeComponent();
-        fetchGreeting();
     }, [launchParams]);
 
     if (isLoading) {
@@ -99,7 +81,6 @@ const MiniApp = () => {
                     </div>
                     <div className="text-lg">
                         User ID: <span className="font-mono">{userId || 'Not available'}</span><br />
-                        <h1>{greeting || "Loading..."}</h1>
                     </div>
                 </div>
             </main>

@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -27,7 +26,7 @@ const BiometricAuth = () => {
       const publicKeyCredentialRequestOptions = {
         challenge,
         timeout: 60000,
-        userVerification: 'required',
+        userVerification: 'required' as const,
         rpId: window.location.hostname,
       }
 
