@@ -6,6 +6,7 @@ import type { NextConfig } from "next";
 config({ path: path.resolve(__dirname, '../../.env.local') });
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   /* config options here */
 };
 

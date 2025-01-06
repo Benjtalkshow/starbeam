@@ -1,10 +1,14 @@
 'use client'
 
-import { useLaunchParams, biometry } from "@telegram-apps/sdk-react";
+import { useLaunchParams, biometry, init as initSDK, CancelablePromise } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
-import BiometricAuth from "../components/BiometricAuth";
 
 const MiniApp = () => {
+    useEffect(() => {
+        console.log('Initializing SDK');
+        initSDK();
+    }, []);
+
     const launchParams = useLaunchParams();
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -12,8 +16,11 @@ const MiniApp = () => {
     const [name, setName] = useState<string | null>(null);
 
     useEffect(() => {
+        let mountPromise: CancelablePromise<void> | null = null;
+        
         const initializeComponent = async () => {
             try {
+                console.log('Initializing component');
                 if (launchParams?.initData) {
                     const initData = launchParams.initData;
                     const uid = initData.user?.id;
@@ -23,21 +30,34 @@ const MiniApp = () => {
 
                     // Check if biometry is available and mount it
                     if (biometry.mount.isAvailable()) {
+                        console.log('Biometry is available');
                         try {
-                            await biometry.mount();
-                            if (biometry.isMounted()) {
-                                // Attempt to authenticate the user
-                                if (biometry.authenticate.isAvailable()) {
-                                    const { status, token } = await biometry.authenticate({
-                                        reason: 'Please authenticate to continue',
-                                    });
+                            try {
+                                console.log('Mounting biometry');
+                                mountPromise = biometry.mount();
+                                await mountPromise;
+                                console.log('Biometry mount exited successfully');
+                            } catch (mountError) {
+                                // Only ignore "already mounting" error
+                                if (mountError instanceof Error && 
+                                    mountError.message.toLowerCase().includes('already mounting')) {
+                                    console.log("Already mounting, skip this render...");
+                                    return;
+                                } else {
+                                    throw mountError; // Re-throw any other errors
+                                }
+                            }
+                            // Attempt to authenticate the user
+                            if (biometry.authenticate.isAvailable()) {
+                                const { status, token } = await biometry.authenticate({
+                                    reason: 'Please authenticate to continue',
+                                });
 
-                                    if (status === 'authorized') {
-                                        console.log(`Authorized. Token: ${token}`);
-                                    } else {
-                                        console.log('Not authorized');
-                                        setError("Biometry authentication failed");
-                                    }
+                                if (status === 'authorized') {
+                                    console.log(`Authorized. Token: ${token}`);
+                                } else {
+                                    console.log('Not authorized');
+                                    setError("Biometry authentication failed");
                                 }
                             }
                         } catch (err) {
@@ -60,6 +80,14 @@ const MiniApp = () => {
         };
 
         initializeComponent();
+
+        // Add cleanup function
+        return () => {
+            if (mountPromise) {
+                console.log('Cancelling mount promise');
+                mountPromise.cancel();
+            }
+        };
     }, [launchParams]);
 
     if (isLoading) {
@@ -82,6 +110,18 @@ const MiniApp = () => {
                     <div className="text-lg">
                         User ID: <span className="font-mono">{userId || 'Not available'}</span><br />
                     </div>
+                </div>
+
+                <div className="text-lg">
+                    Available biometry: {biometry.mount.isAvailable() ? 'Yes' : 'No'}
+                    <br />
+                    Mounted: {biometry.isMounted() ? 'Yes' : 'No'}
+                    <br />
+                    State: {JSON.stringify(biometry.state())}
+                    <br />
+                    Supported: {biometry.isSupported() ? 'Yes' : 'No'}
+                    <br />
+                    Window.Telegram: {(window as any)?.Telegram ? 'Yes' : 'No'}
                 </div>
             </main>
         </div>
