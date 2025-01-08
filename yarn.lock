@@ -1413,7 +1413,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.7.7":
+"axios@npm:^1.7.7, axios@npm:^1.7.9":
   version: 1.7.9
   resolution: "axios@npm:1.7.9"
   dependencies:
@@ -2498,6 +2498,15 @@ __metadata:
   dependencies:
     is-retry-allowed: "npm:^3.0.0"
   checksum: 10c0/3e043b05d47b5565823fe604da7a374388574bd94d4d26d35fa697a1ffd338e6005ea1c4b9801d6d26b804ba3ccd277702eb8d80bab75b07e9433dea269858b2
+  languageName: node
+  linkType: hard
+
+"feaxios@npm:^0.0.23":
+  version: 0.0.23
+  resolution: "feaxios@npm:0.0.23"
+  dependencies:
+    is-retry-allowed: "npm:^3.0.0"
+  checksum: 10c0/e82204eba05ecf9744fc6ae15b7db725888e8ffaf883c17fe84a5118d141d717ea0704d21764d1566c528b574013d5fd2cc1a6601dbc4bdbedfbf662d621f176
   languageName: node
   linkType: hard
 
@@ -4738,9 +4747,26 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "starbeam@workspace:."
   dependencies:
+    stellar-sdk: "npm:^13.1.0"
     typescript: "npm:^5.7.2"
   languageName: unknown
   linkType: soft
+
+"stellar-sdk@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "stellar-sdk@npm:13.1.0"
+  dependencies:
+    "@stellar/stellar-base": "npm:^13.0.1"
+    axios: "npm:^1.7.9"
+    bignumber.js: "npm:^9.1.2"
+    eventsource: "npm:^2.0.2"
+    feaxios: "npm:^0.0.23"
+    randombytes: "npm:^2.1.0"
+    toml: "npm:^3.0.0"
+    urijs: "npm:^1.19.1"
+  checksum: 10c0/e1f6fff088ad2336f77e3ea4528b2c111673239b26630eb856f19ae088799fce77df4c81216cd45cc31afe4ddaa9ac9977681c9cb01ccf8c8755ce415e56cceb
+  languageName: node
+  linkType: hard
 
 "streamsearch@npm:^1.1.0":
   version: 1.1.0

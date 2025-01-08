@@ -2,6 +2,16 @@
 
 import { useLaunchParams, biometry, init as initSDK, CancelablePromise } from "@telegram-apps/sdk-react";
 import { useEffect, useState } from "react";
+import { Keypair } from 'stellar-sdk';
+
+// Create a new ed25519 keypair
+const generateStellarKeyPair = () => {
+    const keypair = Keypair.random();
+    return {
+        publicKey: keypair.publicKey(),
+        privateKey: keypair.secret()
+    };
+};
 
 const MiniApp = () => {
     useEffect(() => {
@@ -72,16 +82,22 @@ const MiniApp = () => {
                 });
 
                 if (status === 'authorized') {
-                    // Store the secure token
+                    // Generate new Stellar keypair
+                    const { publicKey, privateKey } = generateStellarKeyPair();
+
+                    // Store the private key securely using biometry
                     if (biometry.updateToken.isAvailable()) {
                         await biometry.updateToken({
-                            token: "12345" // This would be your actual private key in production
+                            token: privateKey
                         });
                     }
                     
                     // Store public key in local storage
-                    localStorage.setItem('accountPublicKey', 'dummy-public-key');
+                    localStorage.setItem('accountPublicKey', publicKey);
                     setHasAccount(true);
+
+                    console.log('Account created successfully');
+                    console.log('Public Key:', publicKey);
                 } else {
                     setError("Authentication failed");
                 }
@@ -89,6 +105,24 @@ const MiniApp = () => {
         } catch (err) {
             console.error("Error creating account:", err);
             setError("Failed to create account");
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            // Clear biometric token if available
+            if (biometry.updateToken.isAvailable()) {
+                await biometry.updateToken({ token: null });
+            }
+            
+            // Clear local storage
+            localStorage.removeItem('accountPublicKey');
+            setHasAccount(false);
+            
+            console.log('Account deleted successfully');
+        } catch (err) {
+            console.error("Error deleting account:", err);
+            setError("Failed to delete account");
         }
     };
 
@@ -116,6 +150,15 @@ const MiniApp = () => {
                     <div className="flex flex-col items-center gap-4">
                         <div className="text-2xl font-bold">Balance</div>
                         <div className="text-3xl">0.00</div>
+                        <div className="text-sm text-gray-500 break-all max-w-full px-4">
+                            Account: {localStorage.getItem('accountPublicKey')}
+                        </div>
+                        <button 
+                            onClick={handleDeleteAccount}
+                            className="px-4 py-2 mt-4 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                        >
+                            Delete Account
+                        </button>
                     </div>
                 )}
 
