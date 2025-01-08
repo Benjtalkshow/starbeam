@@ -14,81 +14,83 @@ const MiniApp = () => {
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
     const [name, setName] = useState<string | null>(null);
+    const [hasAccount, setHasAccount] = useState<boolean>(false);
+    const [secureToken, setSecureToken] = useState<string | null>(null);
 
+    // Check if account exists in storage and parse launch params
     useEffect(() => {
-        let mountPromise: CancelablePromise<void> | null = null;
-        
-        const initializeComponent = async () => {
-            try {
-                console.log('Initializing component');
-                if (launchParams?.initData) {
-                    const initData = launchParams.initData;
-                    const uid = initData.user?.id;
-                    const name = initData.user?.firstName + " " + initData.user?.lastName;
-                    setUserId(uid ?? null);
-                    setName(name);
+        // Parse launch params
+        if (launchParams?.initData) {
+            const initData = launchParams.initData;
+            const uid = initData.user?.id;
+            const userName = initData.user?.firstName + 
+                (initData.user?.lastName ? " " + initData.user?.lastName : "");
+            setUserId(uid ?? null);
+            setName(userName);
+        }
 
-                    // Check if biometry is available and mount it
-                    if (biometry.mount.isAvailable()) {
-                        console.log('Biometry is available');
-                        try {
-                            try {
-                                console.log('Mounting biometry');
-                                mountPromise = biometry.mount();
-                                await mountPromise;
-                                console.log('Biometry mount exited successfully');
-                            } catch (mountError) {
-                                // Only ignore "already mounting" error
-                                if (mountError instanceof Error && 
-                                    mountError.message.toLowerCase().includes('already mounting')) {
-                                    console.log("Already mounting, skip this render...");
-                                    return;
-                                } else {
-                                    throw mountError; // Re-throw any other errors
-                                }
-                            }
-                            // Attempt to authenticate the user
-                            if (biometry.authenticate.isAvailable()) {
-                                const { status, token } = await biometry.authenticate({
-                                    reason: 'Please authenticate to continue',
-                                });
-
-                                if (status === 'authorized') {
-                                    console.log(`Authorized. Token: ${token}`);
-                                } else {
-                                    console.log('Not authorized');
-                                    setError("Biometry authentication failed");
-                                }
-                            }
-                        } catch (err) {
-                            console.error("Error during biometry mounting:", err);
-                            setError("Biometry mounting failed");
-                        }
-                    } else {
-                        console.log("Biometry is not available");
-                    }
-                } else {
-                    console.log("No initData available");
-                    setError("No initData provided");
-                }
-            } catch (error) {
-                console.error("Error in initializeComponent:", error);
-                setError("An error occurred while initializing the component");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        initializeComponent();
-
-        // Add cleanup function
-        return () => {
-            if (mountPromise) {
-                console.log('Cancelling mount promise');
-                mountPromise.cancel();
-            }
-        };
+        // Check for existing account
+        const storedPublicKey = localStorage.getItem('accountPublicKey');
+        if (storedPublicKey) {
+            setHasAccount(true);
+        }
+        setIsLoading(false);
     }, [launchParams]);
+
+    const handleCreateAccount = async () => {
+        try {
+            if (!biometry.mount.isAvailable()) {
+                setError("Biometry is not available on your device");
+                return;
+            }
+
+            // Mount biometry if not already mounted
+            try {
+                await biometry.mount();
+            } catch (mountError) {
+                if (mountError instanceof Error && 
+                    !mountError.message.toLowerCase().includes('already mounting')) {
+                    throw mountError;
+                }
+            }
+
+            // Request biometry access
+            if (biometry.requestAccess.isAvailable()) {
+                const granted = await biometry.requestAccess({
+                    reason: "Authenticate to create new account"
+                });
+                if (!granted) {
+                    setError("Biometry access denied");
+                    return;
+                }
+            }
+
+            // Authenticate user
+            if (biometry.authenticate.isAvailable()) {
+                const { status } = await biometry.authenticate({
+                    reason: 'Please authenticate to create your account',
+                });
+
+                if (status === 'authorized') {
+                    // Store the secure token
+                    if (biometry.updateToken.isAvailable()) {
+                        await biometry.updateToken({
+                            token: "12345" // This would be your actual private key in production
+                        });
+                    }
+                    
+                    // Store public key in local storage
+                    localStorage.setItem('accountPublicKey', 'dummy-public-key');
+                    setHasAccount(true);
+                } else {
+                    setError("Authentication failed");
+                }
+            }
+        } catch (err) {
+            console.error("Error creating account:", err);
+            setError("Failed to create account");
+        }
+    };
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -103,25 +105,25 @@ const MiniApp = () => {
             <main className="flex flex-col gap-8 row-start-2 items-center">
                 <h1 className="text-4xl font-bold">Starbeam</h1>
 
-                <div className="flex flex-col gap-4 items-center">
-                    <div className="text-lg">
-                        {name ? `Hello, ${name}!` : 'Hello, stranger!'}
+                {!hasAccount ? (
+                    <button 
+                        onClick={handleCreateAccount}
+                        className="px-6 py-3 bg-blue-500 text-white rounded-lg text-lg hover:bg-blue-600 transition-colors"
+                    >
+                        Create Account
+                    </button>
+                ) : (
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="text-2xl font-bold">Balance</div>
+                        <div className="text-3xl">0.00</div>
                     </div>
-                    <div className="text-lg">
-                        User ID: <span className="font-mono">{userId || 'Not available'}</span><br />
-                    </div>
-                </div>
+                )}
 
-                <div className="text-lg">
-                    Available biometry: {biometry.mount.isAvailable() ? 'Yes' : 'No'}
-                    <br />
-                    Mounted: {biometry.isMounted() ? 'Yes' : 'No'}
-                    <br />
-                    State: {JSON.stringify(biometry.state())}
-                    <br />
-                    Supported: {biometry.isSupported() ? 'Yes' : 'No'}
-                    <br />
-                    Window.Telegram: {(window as any)?.Telegram ? 'Yes' : 'No'}
+                {/* Debug info - you can remove this in production */}
+                <div className="text-sm text-gray-500 mt-8">
+                    <div>User: {name || 'Not available'}</div>
+                    <div>ID: {userId || 'Not available'}</div>
+                    <div>Has Account: {hasAccount ? 'Yes' : 'No'}</div>
                 </div>
             </main>
         </div>
